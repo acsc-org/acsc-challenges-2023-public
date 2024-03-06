@@ -1,0 +1,11 @@
+---
+name: "Snukebird"
+description: >
+  <p>Solve fun puzzles to get the flag!</p>
+  <code>nc {host} {port}</code>
+flag: "ACSC{snuk3_vs_vu1ner4bi1ity_58a2552fea58}"
+author: hugeh0ge
+port: 7441
+tags:
+  - pwn
+score: 200

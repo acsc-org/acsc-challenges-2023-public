@@ -1,0 +1,11 @@
+---
+name: 10av
+description: >
+  10av is the safest web storage, try to break it!
+  <a href="http://{host}:{port}/" target="_blank">service</a>
+flag: "ACSC{r3rr3rrr3rrrrr3rrrrrrrr3rrrrrrrrrrrrr3%^%@!}"
+author: orange
+port: 5000
+tags:
+  - web
+score: 400

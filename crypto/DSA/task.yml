@@ -1,0 +1,9 @@
+---
+name: "Dual Signature Algorithm"
+description: >
+  <p>It must be twice as powerful as the ordinal one.</p>
+flag: "ACSC{okay_you_must_be_over_twice_as_powerful_as_the_DSA}"
+author: theoremoon
+tags:
+  - crypto
+score: 250

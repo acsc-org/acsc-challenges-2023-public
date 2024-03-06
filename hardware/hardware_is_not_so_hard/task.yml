@@ -1,0 +1,9 @@
+---
+name: "Hardware is not so hard"
+description: >
+  <p>I have captured communication between a SD card and an embedded device. Could you extract the content of the SD Card? It's in SPI mode.</p>
+flag: "ACSC{1tW@sE@syWasnt1t}"
+author: op
+tags:
+  - hardware
+score: 100

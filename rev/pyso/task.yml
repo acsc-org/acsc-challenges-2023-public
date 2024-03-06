@@ -1,0 +1,10 @@
+---
+name: "pyso"
+description: >
+  <p>Typical crackme challenge in a CTF. But written in py so it should be harder, right?</p>
+  <p>Time to download pyinstaller extractor again.</p>
+flag: "ACSC{pyth0n_numb4_0n3___s0_m4ny_functi0ns_s0_l1ttl3_us3ful_c0d3}"
+author: daniellimws
+tags:
+  - rev
+score: 300

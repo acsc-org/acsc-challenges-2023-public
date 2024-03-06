@@ -1,0 +1,12 @@
+---
+name: "Admin Dashboard"
+description: >
+  I built <a href="http://{host}:{port}" target="_blank">my first website</a>, admin dashboard with bootstrap and PHP! <br>
+  Feel free to try it! Hope there is no bug..
+flag: "ACSC{C$rF_15_3VerYwh3Re!}"
+author: Stephen
+port: 8000
+tags:
+  - web
+  - warmup
+score: 100

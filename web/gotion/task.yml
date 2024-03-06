@@ -1,0 +1,12 @@
+---
+name: Gotion
+description: >
+  Gotion is yet another simple secure note service.
+  You might have seen these kind of applications many times before, but try this one!
+  <a href="http://{host}:{port}/" target="_blank">service</a>
+flag: "ACSC{character_appears_at_the_last_of_video_is_shobon_not_amongus}"
+author: tyage
+port: 30080
+tags:
+  - web
+score: 250

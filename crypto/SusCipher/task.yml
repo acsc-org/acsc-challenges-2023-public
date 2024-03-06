@@ -1,0 +1,13 @@
+---
+name: "SusCipher"
+description: >
+  <p>I made SusCipher, which is a vulnerable block cipher so everyone can break it!</p>
+  <p>Please, try it and find a key.</p>
+  <code>nc {host} {port}</code>
+  <p>Hint: Differential cryptanalysis is useful.</p>
+flag: "ACSC{There_may_be_a_better_solution_to_solve_this_but_I_used_diff_analysis_:(}"
+author: rbtree
+port: 13579
+tags:
+  - crypto
+score: 400

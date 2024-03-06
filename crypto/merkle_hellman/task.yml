@@ -1,0 +1,11 @@
+---
+name: "Merkle Hellman"
+description: >
+  <p>We tired of RSA, try a new cryptosystem by merkle and hellman but we don't know how to decrypt the ciphertext.</p>
+  <p>We need your help for decrypt the ciphertext to get back my flag.txt!</p>
+flag: "ACSC{E4zY_P3@zy}"
+author: Stephen
+tags:
+  - crypto
+  - warmup
+score: 50

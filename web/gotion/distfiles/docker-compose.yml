@@ -1,0 +1,23 @@
+version: '3.4'
+
+services:
+  app:
+    build:
+      context: app
+    environment:
+      - RECAPTCHA_SITEKEY=$RECAPTCHA_SITEKEY
+      - RECAPTCHA_SECRETKEY=$RECAPTCHA_SECRETKEY
+  nginx:
+    image: nginx:1.23
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 30080:80
+  bot:
+    image: ghcr.io/puppeteer/puppeteer:19.4.1
+    volumes:
+      - ./bot/bot.js:/home/pptruser/bot.js
+    environment:
+      - FLAG=CTF{dummyflag}
+      - APP_BASEURL=$APP_BASEURL
+    command: node /home/pptruser/bot.js

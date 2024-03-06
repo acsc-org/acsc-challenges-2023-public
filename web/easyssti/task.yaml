@@ -1,0 +1,10 @@
+---
+name: easySSTI
+description: >
+  <p>Can you SSTI me?</p>
+  <a href="http://{host}:{port}/" target="_blank">service</a>
+flag: "ACSC{h0w_did_y0u_leak_me}"
+port: 8001
+tags:
+  - web
+score: 200

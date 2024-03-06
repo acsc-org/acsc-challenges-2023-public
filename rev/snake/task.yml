@@ -1,0 +1,11 @@
+---
+name: "snake"
+description: >
+  <p>Classic snake game. Score more than 31337 points and you will get the flag.</p>
+  <p>Arrow keys or WASD to move, q to give up.</p>
+flag: "ACSC{y0u_4R3_pr0_G4m3r_Or_ch34t3R}"
+author: daniellimws
+port: 4444
+tags:
+  - rev
+score: 400

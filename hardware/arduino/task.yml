@@ -1,0 +1,12 @@
+---
+name: "arduino"
+description: >
+  <p>My friend made his own password token thing on an Arduino, connected to an EEPROM with 2 wires. For now, it is running on a simulator because he is poor.</p>
+  <p>I recorded a trace of the 2 wires when he was entering his password. I also managed to extract the firmware when he wasn't noticing.</p>
+  <p>Can you tell me his password?</p>
+flag: "ACSC{i2c_stands_for_inter_integrated_circuit_did_you_know_that_if_yes_very_good}"
+author: daniellimws
+tags:
+  - hardware
+  - reversing
+score: 200

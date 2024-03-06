@@ -1,0 +1,19 @@
+version: '3'
+services:
+  corrupted:
+    hostname: godam-server
+    image: panubo/sshd:1.5.0
+    ports:
+      - "2222:22"
+    restart: always
+    volumes:
+      - ./challenge/public.pem:/etc/authorized_keys/godam:ro
+      - ./challenge/flag.txt:/home/godam/flag.txt:ro
+      - ./challenge/sshd_config:/etc/ssh/sshd_config
+    environment:
+      - SSH_USERS=godam:1000:1000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 200M

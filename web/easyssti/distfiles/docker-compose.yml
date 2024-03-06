@@ -1,0 +1,9 @@
+version: '3'
+services:
+  waf:
+    build: ./waf
+    ports:
+      - 8000:3000
+  app:
+    build: ./app
+    restart: always

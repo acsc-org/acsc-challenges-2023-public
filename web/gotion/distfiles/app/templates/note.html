@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Title}}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+    crossorigin="anonymous"></script>
+  <script src="https://www.google.com/recaptcha/api.js"></script>
+  <script>
+    function onReport(token) {
+      document.getElementById('report').submit()
+    }
+  </script>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="card mt-5">
+      <div class="card-body">
+        <h4 class="card-title">{{.Title}}</h4>
+        <pre>{{.Body}}</pre>
+      </div>
+    </div>
+
+    <div>
+      <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#editNote">
+        Edit
+      </button>
+      <form action="/report" method="POST" id="report">
+        <input type="hidden" name="path" value="{{.URL}}">
+        <button class="g-recaptcha btn btn-link" data-sitekey="{{.RecaptchaSiteKey}}" data-callback="onReport"
+          data-action="submit">Report</button>
+      </form>
+    </div>
+
+    <div class="collapse m-3" id="editNote">
+      <form action="/update-note" method="POST" class="row g-3">
+        <input type="hidden" name="noteId" value="{{.Id}}">
+        <div class="col-12">
+          <input type="text" name="title" class="form-control" placeholder="title format [a-zA-Z0-9 ]+"
+            pattern="[a-zA-Z0-9 ]+" maxlength="20" value="{{.Title}}">
+        </div>
+        <div class="col-12 form-floating">
+          <textarea name="body" class="form-control" placeholder="note" style="height: 300px;">{{.Body}}</textarea>
+          <label for="floatingTextarea">note</label>
+        </div>
+        <div class="col-12">
+          <input type="submit" value="Edit" class="btn btn-primary">
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+
+</html>

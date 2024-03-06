@@ -1,0 +1,4 @@
+github.com/dpapathanasiou/go-recaptcha v0.0.0-20190121160230-be5090b17804 h1:gFnPvL9HX+Nrb4M2AwzFYqcwGStxYZpuDpFAqpViBG4=
+github.com/dpapathanasiou/go-recaptcha v0.0.0-20190121160230-be5090b17804/go.mod h1:eovtlS/D2AGk8vy2a9sO4XzOyHMHb8jM+WPsf9pkgFo=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=

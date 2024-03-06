@@ -1,0 +1,9 @@
+version: '3'
+services:
+  waf:
+    build: ./challenge/waf
+    ports:
+      - 8001:3000
+  app:
+    build: ./challenge/app
+    restart: always

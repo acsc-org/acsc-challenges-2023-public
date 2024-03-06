@@ -1,0 +1,23 @@
+version: '3.4'
+
+services:
+  app:
+    build:
+      context: ./distfiles/app
+    environment:
+      - RECAPTCHA_SITEKEY=6LcZAq4jAAAAABzLB8PIli2m82ADTVp_LZu5Mmx5
+      - RECAPTCHA_SECRETKEY=6LcZAq4jAAAAADgnjkGhB12DHoykRo1u-0zPLdsG
+  nginx:
+    image: nginx:1.23
+    volumes:
+      - ./distfiles/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 30080:80
+  bot:
+    image: ghcr.io/puppeteer/puppeteer:19.4.1
+    volumes:
+      - ./distfiles/bot/bot.js:/home/pptruser/bot.js
+    environment:
+      - FLAG=ACSC{character_appears_at_the_last_of_video_is_shobon_not_amongus}
+      - APP_BASEURL=$APP_BASEURL # http://gotion...
+    command: node /home/pptruser/bot.js

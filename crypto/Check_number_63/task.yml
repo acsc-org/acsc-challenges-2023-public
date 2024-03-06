@@ -1,0 +1,9 @@
+---
+name: "Check_number_63"
+description: >
+  <p>I know the "common modulus attack" on RSA. But as far as I know, the attacker can NOT factor n, right? I generated 63 keys with different public exponents. I also generated the check numbers to confirm the keys were valid. Sadly, public exponents and check numbers were leaked. Am I still safe?</p>
+flag: "ACSC{02955bb28b6be53c08912dbf05a4081b763e69a191b39e632341a0cd37120ba3668c3f1e97815259dc46f0665b0713062d159cc85c47df77468819d367d25746}"
+author: Bono_iPad
+tags:
+  - crypto
+score: 150

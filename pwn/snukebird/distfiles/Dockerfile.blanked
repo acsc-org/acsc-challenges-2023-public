@@ -1,0 +1,19 @@
+FROM ubuntu:22.04
+
+RUN apt-get -y update --fix-missing
+RUN apt-get -y upgrade
+RUN apt-get -y install socat
+RUN groupadd -r ctf && useradd -r -g ctf ctf
+
+WORKDIR /home/ctf
+RUN echo "ACSC{This is dummy flag you can use for test}" > flag.txt
+COPY distfiles/snukebird .
+COPY distfiles/stage01.txt .
+COPY distfiles/stage02.txt .
+COPY distfiles/stage03.txt .
+RUN chmod -R og-w .
+
+RUN chown -R root:ctf /home/ctf
+
+USER ctf
+CMD socat TCP-L:7441,reuseaddr,fork EXEC:"./snukebird"

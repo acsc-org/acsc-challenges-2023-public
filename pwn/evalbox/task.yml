@@ -1,0 +1,11 @@
+---
+name: "evalbox"
+description: >
+  <p>I came up with a super-simple yet super-strong seccomp rule for Python!</p>
+  <code>nc {host} {port}</code>
+flag: "ACSC{bl4ckL1st_ruL3_1s_4lw4y5_d4ng3r0uS!}"
+author: ptr-yudai
+port: 9341
+tags:
+  - pwn
+score: 200

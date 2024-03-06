@@ -1,0 +1,12 @@
+---
+name: "pcap-1"
+description: >
+  <p>Here is a packet capture of my computer when I was preparing my presentation on Google Slides. Can you reproduce the contents of the slides?</p>
+  <p>Download the file <a href="https://drive.google.com/file/d/1TnWZ9fqV7zCn8Hnew2o8lVz7BfFP46Ks/view?usp=sharing">here.</a></p>
+  <p><strong>Note:</strong> If you find a "fake flag", submit it here. You will find some text next to the flag saying it is not accepted, but now it is. There are 2 flags in the challenge, and both are accepted. Part 1 accepts the flag that is easier to get.</p>
+flag: "ACSC{f0r3ns1cs_is_s0_fun}"
+author: daniellimws
+tags:
+  - forensics
+  - warmup
+score: 50

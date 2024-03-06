@@ -1,0 +1,12 @@
+---
+name: "Vaccine"
+description: >
+  <p>Give me the correct vaccine to view my secret</p>
+  Connect with <code>nc {host} {port}</code>
+flag: "ACSC{RoP_3@zy_Pe4$y}"
+author: Stephen
+port: 1337
+tags:
+  - pwn
+  - warmup
+score: 50

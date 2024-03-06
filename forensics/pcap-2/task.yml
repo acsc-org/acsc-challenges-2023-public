@@ -1,0 +1,11 @@
+---
+name: "pcap-2"
+description: >
+  <p>Here is a packet capture of my computer when I was preparing my presentation on Google Slides. Can you reproduce the contents of the slides?</p>
+  <p>Download the file <a href="https://drive.google.com/file/d/1TnWZ9fqV7zCn8Hnew2o8lVz7BfFP46Ks/view?usp=sharing">here.</a></p>
+  <p><strong>Note:</strong> If you find a "fake flag", submit it in part 1. There are 2 flags in the challenge, and both are accepted. Part 1 accepts the flag that is easier to get.</p>
+flag: "ACSC{Guessing_is_not_good}"
+author: daniellimws
+tags:
+  - forensics
+score: 200

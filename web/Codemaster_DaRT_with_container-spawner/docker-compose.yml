@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  spawner:
+    image: ghcr.io/tyage/container-spawner:latest
+    environment:
+      - SPAWNER_IMAGE_NAME=acsc-codemaster-dart
+      - SPAWNER_TIME_LIMIT=1200
+      - SPAWNER_CONTAINER_PORT=8080
+      - SPAWNER_CONTAINER_ARGS={"dns":["8.8.8.8"]}
+      - RECAPTCHA_PUBLIC_KEY=6Lea8q4kAAAAALYrFMHTWg2vjycoCxrp3Xht3gOl
+      - RECAPTCHA_PRIVATE_KEY=6Lea8q4kAAAAAG4cQ5Are9dy5rKXmAk2DT5n3vtH
+      - SPAWNER_HOSTNAME=codemaster.chal.ctf.acsc.asia
+    ports:
+      - "30081:5000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock     
+      - ./spawner-template.html:/app/templates/index.html
+  cleaner:
+    image: ghcr.io/tyage/container-spawner-cleaner:latest
+    environment:
+      - SPAWNER_IMAGE_NAME=acsc-codemaster-dart
+      - SPAWNER_TIME_LIMIT=1200
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

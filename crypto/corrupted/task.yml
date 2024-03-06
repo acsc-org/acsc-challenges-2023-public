@@ -1,0 +1,12 @@
+---
+name: "Corrupted"
+description: >
+  <p>My private key was corrupted, luckily I managed to recover some parts</p>
+  <p>Can you help me to recover the whole private key? I got an important file on my server</p>
+  <p>Login my server using godam@{host} port {port}</p>
+flag: "ACSC{R3c0vEr_F4ctOr5_fROm_Kn0wn_b17$s!}"
+author: Stephen
+port: 2222
+tags:
+  - crypto
+score: 250

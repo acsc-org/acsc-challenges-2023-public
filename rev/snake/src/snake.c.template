@@ -1,0 +1,631 @@
+#include <time.h>
+#include <arpa/inet.h> // inet_addr()
+#include <netdb.h>
+#include <string.h>
+#include <strings.h> // bzero()
+#include <sys/socket.h>
+#include <ncurses.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/ptrace.h>
+#include <sys/user.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+#include "md5.h"
+#include "rng.h"
+
+/* PARENT */
+unsigned int SEED;
+pid_t CHILD_PID;
+MD5Context ctx;
+
+unsigned long TEXT_START_ADDR = 0xdeadbeefbeefdead;
+unsigned long TEXT_END_ADDR = 0xcafebabebabecafe;
+
+#define SERVER_HOST "snake.chal.ctf.acsc.asia"
+#define SERVER_PORT "4444"
+#define SA struct sockaddr
+
+/* CHILD */
+#define SEND_FOOD(x, y)                           \
+ __asm__ __volatile__(  "" :: "b"(x), "c"(y)  )
+#define SEND_SCORE()                           \
+ __asm__ __volatile__(  "" :: "b"(score), "c"(maxX), "d"(maxY)  )
+#define UD2(R)                           \
+ __asm__ __volatile__(  ".byte 0x00,0x00\n" :: "a"(R)  )
+#define C_OBF(R)                           \
+ __asm__ __volatile__(  ".quad 0xea57ca34da91ba36\n" :: "a"(R)  )
+#define C_DOBF(R, addr_key, noop)                           \
+ __asm__ __volatile__(  ".byte 0x00,0x00\n" :: "a"(R), "b"(addr_key), "c"(noop)  )
+#define P_OBF(K)                           \
+ __asm__ __volatile__(  ".quad 0xfa57ca34da91ba36\n.long " K "\n" )
+#define PAD()                           \
+ __asm__ __volatile__(  ".byte 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90"  )
+
+
+#define DELAY 20000
+#define TIMEOUT 10
+#define STARTING_TAIL_LEN 3
+
+typedef enum {
+    LEFT, RIGHT, UP, DOWN
+} direction_type;
+
+typedef struct point {
+    int x;
+    int y;
+} point;
+
+int maxX = 0, maxY = 0;
+int tail_len = STARTING_TAIL_LEN;
+int score = 0;
+
+direction_type current_dir = RIGHT;
+point snake_parts[256] = {};
+point food;
+
+void create_food()
+{
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+
+    food.x = genrand64_int64() % (maxX / 2);
+    food.y = genrand64_int64() % maxY;
+    PAD();
+}
+
+void init_curses()
+{
+    initscr();
+    clear();
+    getmaxyx(stdscr, maxY, maxX);
+    C_DOBF(A, B, C);
+    if (maxX < 32 || maxY < 32)
+    {
+        mvprintw(0, 0, "Your screen is too small...");
+        mvprintw(1, 0, "Expected width>=48, height>=48");
+        mvprintw(2, 0, "Actual   width=%d, height=%d", maxX, maxY);
+        refresh();
+        exit(1);
+    }
+
+    noecho();
+    keypad(stdscr, TRUE);
+    cbreak();
+    timeout(TIMEOUT);
+    curs_set(FALSE);
+    refresh();
+}
+
+void cleanup_curses()
+{
+    echo();
+    curs_set(TRUE);
+    nocbreak();
+    endwin();
+}
+
+void init_game()
+{
+    UD2(1);
+    unsigned int seed;
+    asm("movl %%eax, %0" : "=r"(seed) :);
+    // mvprintw(0, 0, "seed: %d\n", seed);
+    // refresh();
+    // exit(0);
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    init_genrand64(seed);
+    PAD();
+
+    current_dir = RIGHT;
+    tail_len = STARTING_TAIL_LEN;
+    score = 0;
+
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    int j = 0;
+    PAD();
+    for (int i = tail_len; i >= 0; --i)
+    {
+        point curr_point;
+        curr_point.x = i * 2;
+        curr_point.y = maxY / 2;
+        snake_parts[j++] = curr_point;
+    }
+
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    create_food();
+    PAD();
+}
+
+void shift_snake(int next_x, int next_y)
+{
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    PAD();
+    for (int i = tail_len; i > 0; --i)
+    {
+        snake_parts[i] = snake_parts[i-1];
+    }
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    snake_parts[0] = (point){.x=next_x, .y=next_y};
+    PAD();
+}
+
+void extend_snake(int next_x, int next_y)
+{
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    if (tail_len == 255) return;
+    tail_len++;
+    PAD();
+    for (int i = tail_len; i > 0; --i)
+    {
+        snake_parts[i] = snake_parts[i-1];
+    }
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    snake_parts[0] = (point){.x=next_x, .y=next_y};
+    PAD();
+}
+
+void draw_food()
+{
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    mvprintw(food.y, food.x * 2, "x");
+    PAD();
+}
+
+void draw_snake()
+{
+    C_OBF("0x31337");
+    C_DOBF(A, B, C);
+    mvprintw(snake_parts[0].y, snake_parts[0].x * 2, "* ");
+    PAD();
+    for (int i = 1; i <= tail_len; ++i)
+        mvprintw(snake_parts[i].y, snake_parts[i].x * 2, "o ");
+}
+
+void draw_score()
+{
+    mvprintw(1, 2, "Score: %d", score);
+    PAD();
+}
+
+void draw_game()
+{
+    clear();
+    draw_food();
+    draw_snake();
+    refresh();
+}
+
+void end()
+{
+    cleanup_curses();
+    puts("GG");
+    printf("Score: %d\n\n", score);
+    // puts("Submitting score to server...\n");
+    fflush(stdout);
+}
+
+void game()
+{
+    init_curses();
+    init_game();
+
+    int ch;
+    while(1) {
+        UD2(2);
+        ch = getch();
+
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        PAD();
+        if (ch == 'q')
+            break;
+
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        PAD();
+        if(( ch=='d' || ch == 'D' || ch=='l' || ch=='L' || ch == KEY_RIGHT) && current_dir != LEFT)
+        {
+            C_OBF("0x31337");
+            current_dir = RIGHT;
+            PAD();
+        }
+        else if (( ch=='a' || ch == 'A' ||  ch=='h' || ch=='H' || ch == KEY_LEFT) && current_dir != RIGHT)
+        {
+            C_OBF("0x31337");
+            current_dir = LEFT;
+            PAD();
+        }
+        else if(( ch=='s' || ch == 'S' || ch=='j' || ch=='J' || ch == KEY_DOWN) && current_dir != UP)
+        {
+            C_OBF("0x31337");
+            current_dir = DOWN;
+            PAD();
+        }
+        else if(( ch=='w' || ch == 'W' || ch=='k' || ch=='K' || ch == KEY_UP) && current_dir != DOWN)
+        {
+            C_OBF("0x31337");
+            current_dir = UP;
+            PAD();
+        }
+
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        PAD();
+        PAD();
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        PAD();
+        PAD();
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        PAD();
+        PAD();
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        PAD();
+        PAD();
+
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        int next_x = snake_parts[0].x;
+        PAD();
+
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        int next_y = snake_parts[0].y;
+        PAD();
+
+        if(current_dir == RIGHT)
+        {
+            C_OBF("0x31337");
+            next_x = ((next_x + 1 + maxX/2) % (maxX / 2));
+            PAD();
+        }
+        else if(current_dir == LEFT)
+        {
+            C_OBF("0x31337");
+            next_x = ((next_x - 1 + maxX/2) % (maxX / 2));
+            PAD();
+        }
+        else if(current_dir == UP)
+        {
+            C_OBF("0x31337");
+            next_y = (next_y - 1 + maxY) % maxY;
+            PAD();
+        }
+        else if(current_dir == DOWN)
+        {
+            C_OBF("0x31337");
+            next_y = (next_y + 1 + maxY) % maxY;
+            PAD();
+        }
+
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        PAD();
+        PAD();
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        PAD();
+        PAD();
+        C_OBF("0x31337");
+        C_DOBF(A, B, C);
+        int collide = 0;
+        PAD();
+        for (int i = 1; i <= tail_len; ++i)
+            if (snake_parts[i].x == next_x && snake_parts[i].y == next_y)
+                collide = 1;
+        if (collide) break;
+
+        C_OBF("0x31337");
+        PAD();
+        if (food.x == next_x && food.y == next_y)
+        {
+            SEND_FOOD(next_x, next_y);
+            UD2(3);
+            extend_snake(next_x, next_y);
+            score++;
+            create_food();
+        }
+        else {
+            shift_snake(next_x, next_y);
+        }
+
+        draw_game();
+    }
+
+    end();
+    SEND_SCORE();
+    UD2(4);
+}
+
+/** PARENT */
+
+void init_md5()
+{
+    P_OBF("0x31337");
+    md5Init(&ctx);
+}
+
+void update_hash_with_seed()
+{
+    // puts("TODO: update hash with SEED");
+    P_OBF("0x31337");
+    md5Update(&ctx, (uint8_t*)&SEED, sizeof(SEED));
+}
+
+void update_hash_with_food(point food)
+{
+    // puts("TODO: update hash with food");
+    P_OBF("0x31337");
+    md5Update(&ctx, (uint8_t*)&food, sizeof(point));
+}
+
+void print_bytes(void *p, size_t length){
+    P_OBF("0x31337");
+	uint8_t *pp = (uint8_t *)p;
+	for(unsigned int i = 0; i < length; ++i){
+		if(i && !(i % 16)){
+			printf("\n");
+		}
+		printf("%02X ", pp[i]);
+	}
+	printf("\n");
+}
+
+void print_hash(uint8_t *p){
+    P_OBF("0x31337");
+	for(unsigned int i = 0; i < 16; ++i){
+		printf("%02x", p[i]);
+	}
+	printf("\n");
+}
+
+void finalize_hash(uint64_t rip)
+{
+    P_OBF("0x31337");
+    int text_size = TEXT_END_ADDR - TEXT_START_ADDR;
+    uint8_t* text = (uint8_t*)malloc(text_size);
+    PAD();
+    PAD();
+    PAD();
+    PAD();
+    P_OBF("0x31337");
+    PAD();
+    PAD();
+    PAD();
+    PAD();
+    P_OBF("0x31337");
+    PAD();
+    PAD();
+    PAD();
+    PAD();
+    for (unsigned int addr = TEXT_START_ADDR; addr < TEXT_END_ADDR; addr++)
+    {
+        int i = addr - TEXT_START_ADDR;
+        uint8_t code = ptrace(PTRACE_PEEKTEXT, CHILD_PID, addr, NULL) & 0xff;
+        text[i] = code;
+    }
+    P_OBF("0x31337");
+    PAD();
+    PAD();
+    PAD();
+    PAD();
+    md5Update(&ctx, text, text_size);
+
+    P_OBF("0x31337");
+    PAD();
+    PAD();
+    md5Finalize(&ctx);
+    // print_hash(ctx.digest);
+    // print_bytes(text, text_size);
+
+    PAD();
+    PAD();
+    PAD();
+    free(text);
+}
+
+void submit_score(int score, int maxX, int maxY)
+{
+    // puts("TODO: parent submit score to server");
+    struct submission
+    {
+        unsigned int seed;
+        int maxX, maxY;
+        int score;
+        uint8_t digest[16];
+    } submission;
+    submission.seed = SEED;
+    submission.maxX = maxX;
+    submission.maxY = maxY;
+    submission.score = score;
+    memcpy(submission.digest, ctx.digest, 16);
+
+    P_OBF("0x31337");
+
+    // getaddrinfo
+    struct addrinfo hints, *res;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    P_OBF("0x31337");
+    int rc = getaddrinfo(SERVER_HOST, SERVER_PORT, &hints, &res);
+    if (rc != 0)
+    {
+        exit(0);
+    }
+
+    // socket stuff
+    int sockfd, connfd;
+    struct sockaddr_in servaddr;
+
+    P_OBF("0x31337");
+    bzero(&servaddr, sizeof(servaddr));
+    memcpy(&servaddr, res->ai_addr, sizeof(servaddr));
+    freeaddrinfo(res);
+
+    // socket create and verification
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1)
+    {
+        // printf("socket creation failed...\n");
+        exit(0);
+    }
+    // else
+    //     printf("Socket successfully created..\n");
+
+    // assign IP, PORT
+    // servaddr.sin_family = AF_INET;
+    // servaddr.sin_addr.s_addr = inet_addr(SERVER_HOST);
+    // servaddr.sin_port = htons(SERVER_PORT);
+
+    P_OBF("0x31337");
+    // connect the client socket to server socket
+    if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0)
+    {
+        // printf("connection with the server failed...\n");
+        exit(0);
+    }
+    // else
+    //     printf("connected to the server..\n");
+
+    // send to server
+    char response[512];
+    // printf("submission size: %d\n", sizeof(submission));
+    P_OBF("0x31337");
+    write(sockfd, &submission, sizeof(submission));
+    P_OBF("0x31337");
+    bzero(response, sizeof(response));
+    P_OBF("0x31337");
+    read(sockfd, response, sizeof(response));
+    P_OBF("0x31337");
+    puts(response);
+
+    // close the socket
+    close(sockfd);
+    PAD();
+}
+
+void sig_handler(int signum)
+{
+    if (signum == SIGINT)
+    {
+        kill(CHILD_PID, SIGINT);
+        exit(0);
+    }
+}
+
+void skip_ud2_and_continue(struct user_regs_struct *regs)
+{
+    regs->rip += 2;
+    ptrace(PTRACE_SETREGS, CHILD_PID, NULL, regs);
+    ptrace(PTRACE_CONT, CHILD_PID, NULL, NULL);
+}
+
+void multi_tracer(struct user_regs_struct *regs) { }
+
+void tracer()
+{
+    struct user_regs_struct regs;
+    int wait_status;
+    wait(&wait_status);
+    int already_init_md5 = 0;
+
+    while (WIFSTOPPED(wait_status))
+    {
+        if (WIFEXITED(wait_status)) exit(0);
+        // puts("UD2 reached by child");
+        ptrace(PTRACE_GETREGS, CHILD_PID, NULL, &regs);
+        uint64_t rax = regs.rax;
+        // printf("rax: %d\n", rax);
+
+        switch(rax)
+        {
+        // do srand
+        case 1:
+            SEED = time(NULL);
+            regs.rax = SEED;
+            break;
+        case 2:
+            usleep(DELAY);
+            break;
+        case 3:
+            point food;
+            food.x = regs.rbx;
+            food.y = regs.rcx;
+
+            if (!already_init_md5)
+            {
+                init_md5();
+                update_hash_with_seed();
+                already_init_md5 = 1;
+            }
+
+            update_hash_with_food(food);
+            break;
+
+        case 4:
+            int score = regs.rbx;
+            int maxX = regs.rcx;
+            int maxY = regs.rdx;
+            if (score == 0)
+            {
+                puts("At least try to get 1 point?...");
+            }
+            else
+            {
+                finalize_hash(regs.rip);
+                submit_score(score, maxX, maxY);
+            }
+            break;
+
+        default:
+            if (regs.rax >= 0x1000 && regs.rax < 0x3000)
+                multi_tracer(&regs);
+            break;
+        }
+
+        skip_ud2_and_continue(&regs);
+        wait(&wait_status);
+    }
+}
+
+int main()
+{
+    pid_t pid = fork();
+
+    if (pid < 0)
+        return 1;
+
+    // child process
+    if (pid == 0)
+    {
+        if (ptrace(PTRACE_TRACEME, 0, 0, 0) < 0)
+            return 1;
+        game();
+    }
+
+    // parent process
+    else
+    {
+        CHILD_PID = pid;
+        signal(SIGINT, sig_handler);
+        tracer();
+    }
+
+    return 0;
+}

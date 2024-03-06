@@ -1,0 +1,11 @@
+---
+name: "re"
+description: >
+  <p>Sometimes you want to rewrite notes.</p>
+  <code>nc {host} {port}</code>
+flag: "ACSC{r34ll0c_15_n07_ju57_r34ll0c473}"
+author: shift-crops
+port: 7352
+tags:
+  - pwn
+score: 300
